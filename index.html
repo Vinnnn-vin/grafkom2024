@@ -1,5 +1,3 @@
-
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -15,23 +13,30 @@
     </style>
     <script>
         document.addEventListener('DOMContentLoaded', function () {
-            // Mendapatkan elemen garis
-            var line = document.getElementById('line');
-
             // Menangani kejadian ketika cursor menekan layar
             document.addEventListener('mousedown', function (event) {
+                // Membuat elemen garis baru
+                var line = document.createElement('div');
+                line.className = 'line';
+
                 // Mengatur panjang garis menjadi 20 cm
                 line.style.width = '20cm';
 
                 // Mengatur posisi garis sesuai dengan posisi cursor
                 line.style.left = (event.clientX - 10) + 'px';
                 line.style.top = (event.clientY - 1) + 'px';
+
+                // Menambahkan elemen garis ke dalam body
+                document.body.appendChild(line);
+
+                // Menghapus elemen garis setelah 2 detik
+                setTimeout(function () {
+                    document.body.removeChild(line);
+                }, 2000);
             });
         });
     </script>
 </head>
 <body>
-    <!-- Elemen untuk garis -->
-    <div id="line" class="line"></div>
 </body>
 </html>
