@@ -1,2 +1,38 @@
 <h1>GrafKom 2024</h1>
 <h3>Andreas Calvin - 222117006</h3>
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        /* Style untuk garis */
+        .line {
+            position: absolute;
+            border: 2px solid black;
+            transition: all 2s ease;
+        }
+    </style>
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            // Mendapatkan elemen garis
+            var line = document.getElementById('line');
+
+            // Menangani kejadian ketika cursor menekan layar
+            document.addEventListener('mousedown', function (event) {
+                // Mengatur panjang garis menjadi 20 cm
+                line.style.width = '20cm';
+
+                // Mengatur posisi garis sesuai dengan posisi cursor
+                line.style.left = (event.clientX - 10) + 'px';
+                line.style.top = (event.clientY - 1) + 'px';
+            });
+        });
+    </script>
+</head>
+<body>
+    <!-- Elemen untuk garis -->
+    <div id="line" class="line"></div>
+</body>
+</html>
