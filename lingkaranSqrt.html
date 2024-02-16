@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Circle SQRT Single Click </title>
+    <style>
+        canvas {
+            border: 1px solid black;
+        }
+    </style>
+</head>
+
+<body>
+
+    <h3>Andreas Calvin - 222117006</h3>
+    <h3>Lingkaran SQRT</h3>
+
+    <canvas id="myCanvas" width="500" height="500"></canvas>
+
+    <script>
+        const canvas = document.getElementById('myCanvas');
+        const ctx = canvas.getContext('2d');
+        let centerX = null;
+        let centerY = null;
+
+        canvas.addEventListener('click', function (event) {
+            const rect = canvas.getBoundingClientRect();
+            const x = event.clientX - rect.left;
+            const y = event.clientY - rect.top;
+
+            if (centerX === null && centerY === null) {
+                // Set the center point on first click
+                centerX = x;
+                centerY = y;
+            } else {
+                // Calculate the distance between first click and second click
+                const radius = Math.sqrt(Math.pow(x - centerX, 2) + Math.pow(y - centerY, 2));
+                drawCircle(centerX, centerY, radius);
+                // Reset center point for next circle
+                centerX = null;
+                centerY = null;
+            }
+        });
+
+        function drawCircle(centerX, centerY, radius) {
+            ctx.beginPath();
+            ctx.arc(centerX, centerY, radius, 0, 2 * Math.PI);
+            ctx.strokeStyle = 'black';
+            ctx.lineWidth = 2;
+            ctx.stroke();
+        }
+    </script>
+
+</body>
+
+</html>
