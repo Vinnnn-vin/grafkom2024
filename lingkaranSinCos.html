@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Canvas Single Click</title>
+    <style>
+        canvas {
+            border: 1px solid black;
+        }
+    </style>
+</head>
+
+<body>
+
+    <h3>Andreas Calvin - 222117006</h3>
+    <h3>Lingkaran SinCos</h3>
+
+    <canvas id="myCanvas" width="500" height="500"></canvas>
+
+    <script>
+        // Mendapatkan elemen canvas dan konteks 2D
+        const canvas = document.getElementById('myCanvas');
+        const ctx = canvas.getContext('2d');
+
+        // Variabel untuk menyimpan koordinat titik tengah
+        let centerX = null;
+        let centerY = null;
+
+        // Menambahkan event listener untuk klik mouse
+        canvas.addEventListener('click', function (event) {
+            const rect = canvas.getBoundingClientRect();
+            const x = event.clientX - rect.left;
+            const y = event.clientY - rect.top;
+
+            if (centerX === null && centerY === null) {
+                // Menetapkan titik tengah pada klik pertama
+                centerX = x;
+                centerY = y;
+            } else {
+                // Menghitung jarak antara titik pertama dan kedua
+                const dx = x - centerX;
+                const dy = y - centerY;
+                const radius = Math.sqrt(dx * dx + dy * dy); // Menggunakan rumus Pythagoras
+                drawCircle(centerX, centerY, radius);
+
+                // Mereset titik tengah untuk lingkaran berikutnya
+                centerX = null;
+                centerY = null;
+            }
+        });
+
+        // Fungsi untuk menggambar lingkaran
+        function drawCircle(centerX, centerY, radius) {
+            ctx.beginPath();
+            ctx.arc(centerX, centerY, radius, 0, 2 * Math.PI);
+            ctx.strokeStyle = 'black';
+            ctx.lineWidth = 2;
+            ctx.stroke();
+        }
+    </script>
+
+</body>
+
+</html>
