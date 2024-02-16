@@ -1,66 +1,66 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Canvas Single Click</title>
-    <style>
-        canvas {
-            border: 1px solid black;
-        }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Circle Drawing using Sin & Cos</title>
+  <style>
+    canvas {
+      border: 1px solid #000;
+      cursor: crosshair;
+    }
+  </style>
 </head>
-
 <body>
+    <h3>Circle Drawing using Sin & Cos</h3>
+    <h3>Andreas Calvin - 222117006</h3><br>
 
-    <h3>Andreas Calvin - 222117006</h3>
-    <h3>Lingkaran SinCos</h3>
+  <canvas id="myCanvas" width="500" height="500"></canvas>
 
-    <canvas id="myCanvas" width="500" height="500"></canvas>
+  <script>
+    document.addEventListener("DOMContentLoaded", function () {
+      // Get canvas element and 2D context
+      var canvas = document.getElementById("myCanvas");
+      var ctx = canvas.getContext("2d");
 
-    <script>
-        // Mendapatkan elemen canvas dan konteks 2D
-        const canvas = document.getElementById('myCanvas');
-        const ctx = canvas.getContext('2d');
+      var points = []; // Array to store clicked points
 
-        // Variabel untuk menyimpan koordinat titik tengah
-        let centerX = null;
-        let centerY = null;
+      // Event listener for mouse click
+      canvas.addEventListener("click", function(event) {
+        var rect = canvas.getBoundingClientRect();
+        var x = event.clientX - rect.left;
+        var y = event.clientY - rect.top;
 
-        // Menambahkan event listener untuk klik mouse
-        canvas.addEventListener('click', function (event) {
-            const rect = canvas.getBoundingClientRect();
-            const x = event.clientX - rect.left;
-            const y = event.clientY - rect.top;
+        points.push({ x: x, y: y });
 
-            if (centerX === null && centerY === null) {
-                // Menetapkan titik tengah pada klik pertama
-                centerX = x;
-                centerY = y;
-            } else {
-                // Menghitung jarak antara titik pertama dan kedua
-                const dx = x - centerX;
-                const dy = y - centerY;
-                const radius = Math.sqrt(dx * dx + dy * dy); // Menggunakan rumus Pythagoras
-                drawCircle(centerX, centerY, radius);
+        // Draw the clicked point
+        ctx.fillStyle = "#ff0000"; // Red color
+        ctx.fillRect(x - 2, y - 2, 4, 4);
 
-                // Mereset titik tengah untuk lingkaran berikutnya
-                centerX = null;
-                centerY = null;
-            }
-        });
-
-        // Fungsi untuk menggambar lingkaran
-        function drawCircle(centerX, centerY, radius) {
-            ctx.beginPath();
-            ctx.arc(centerX, centerY, radius, 0, 2 * Math.PI);
-            ctx.strokeStyle = 'black';
-            ctx.lineWidth = 2;
-            ctx.stroke();
+        // If two points are clicked, draw the circle
+        if (points.length === 2) {
+          drawCircle(points[0], points[1]);
+          points = []; // Reset points array
         }
-    </script>
+      });
 
+      // Circle Drawing Algorithm using sin and cos
+      function drawCircle(point1, point2) {
+        var radius = Math.sqrt(Math.pow(point2.x - point1.x, 2) + Math.pow(point2.y - point1.y, 2)) / 2;
+        var centerX = (point1.x + point2.x) / 2;
+        var centerY = (point1.y + point2.y) / 2;
+
+        ctx.beginPath();
+        for (var angle = 0; angle < 2 * Math.PI; angle += 0.01) {
+          var x = centerX + radius * Math.cos(angle);
+          var y = centerY + radius * Math.sin(angle);
+          ctx.lineTo(x, y);
+        }
+        ctx.closePath();
+        ctx.strokeStyle = "#000000"; // Black color
+        ctx.stroke();
+      }
+    });
+  </script>
 </body>
-
 </html>
