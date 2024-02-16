@@ -4,55 +4,61 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Circle SQRT Single Click </title>
+    <title>Circle Drawing using Sqrt
+    </title>
     <style>
         canvas {
-            border: 1px solid black;
+            border: 1px solid #000;
+            cursor: crosshair;
         }
     </style>
 </head>
 
 <body>
-
-    <h3>Andreas Calvin - 222117006</h3>
-    <h3>Lingkaran SQRT</h3>
+    <h3>Circle Drawing using Sqrt</h3>
+    <h3>Andreas Calvin - 222117006</h3><br>
 
     <canvas id="myCanvas" width="500" height="500"></canvas>
 
     <script>
-        const canvas = document.getElementById('myCanvas');
-        const ctx = canvas.getContext('2d');
-        let centerX = null;
-        let centerY = null;
+        document.addEventListener("DOMContentLoaded", function () {
+            // Get canvas element and 2D context
+            var canvas = document.getElementById("myCanvas");
+            var ctx = canvas.getContext("2d");
 
-        canvas.addEventListener('click', function (event) {
-            const rect = canvas.getBoundingClientRect();
-            const x = event.clientX - rect.left;
-            const y = event.clientY - rect.top;
+            var points = []; // Array to store clicked points
 
-            if (centerX === null && centerY === null) {
-                // Set the center point on first click
-                centerX = x;
-                centerY = y;
-            } else {
-                // Calculate the distance between first click and second click
-                const radius = Math.sqrt(Math.pow(x - centerX, 2) + Math.pow(y - centerY, 2));
-                drawCircle(centerX, centerY, radius);
-                // Reset center point for next circle
-                centerX = null;
-                centerY = null;
+            // Event listener for mouse click
+            canvas.addEventListener("click", function (event) {
+                var rect = canvas.getBoundingClientRect();
+                var x = event.clientX - rect.left;
+                var y = event.clientY - rect.top;
+
+                points.push({ x: x, y: y });
+
+                // Draw the clicked point
+                ctx.fillStyle = "#ff0000"; // Red color
+                ctx.fillRect(x - 2, y - 2, 4, 4);
+
+                // If two points are clicked, draw the circle
+                if (points.length === 2) {
+                    drawCircle(points[0], points[1]);
+                    points = []; // Reset points array
+                }
+            });
+
+            // Circle Drawing Algorithm
+            function drawCircle(point1, point2) {
+                var radius = Math.sqrt(Math.pow(point2.x - point1.x, 2) + Math.pow(point2.y - point1.y, 2)) / 2;
+                var centerX = (point1.x + point2.x) / 2;
+                var centerY = (point1.y + point2.y) / 2;
+                ctx.beginPath();
+                ctx.arc(centerX, centerY, radius, 0, 2 * Math.PI);
+                ctx.strokeStyle = "#000000"; // Black color
+                ctx.stroke();
             }
         });
-
-        function drawCircle(centerX, centerY, radius) {
-            ctx.beginPath();
-            ctx.arc(centerX, centerY, radius, 0, 2 * Math.PI);
-            ctx.strokeStyle = 'black';
-            ctx.lineWidth = 2;
-            ctx.stroke();
-        }
     </script>
-
 </body>
 
 </html>
