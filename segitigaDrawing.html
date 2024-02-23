@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Draw Triangle</title>
+</head>
+<body>
+    <canvas id="canvas" width="400" height="400" style="border:1px solid black;"></canvas>
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            var canvas = document.getElementById("canvas");
+            var ctx = canvas.getContext("2d");
+            var points = [];
+            var triangleDrawn = false;
+
+            canvas.addEventListener("click", function (event) {
+                var rect = canvas.getBoundingClientRect();
+                var x = event.clientX - rect.left;
+                var y = event.clientY - rect.top;
+                var pointName = "p" + points.length;
+                points.push({ x: x, y: y });
+                if (points.length === 3) {
+                    drawTriangle();
+                    points = [];
+                }
+            });
+
+            function drawTriangle() {
+                var p0 = points[0];
+                var p1 = points[1];
+                var p2 = points[2];
+                var A = (p1.y - p0.y) * (p2.x - p0.x) - (p2.y - p0.y) * (p1.x - p0.x);
+                var B = (p2.y - p0.y) * (p1.x - p0.x) - (p1.y - p0.y) * (p2.x - p0.x);
+                var C = -p0.x * A - p0.y * B;
+
+                if (A + B + C < 0) {
+                    A *= -1;
+                    B *= -1;
+                    C *= -1;
+                }
+
+                var minX = Math.min(p0.x, p1.x, p2.x);
+                var maxX = Math.max(p0.x, p1.x, p2.x);
+                var minY = Math.min(p0.y, p1.y, p2.y);
+                var maxY = Math.max(p0.y, p1.y, p2.y);
+                var bbox = [minX, minY, maxX, maxY];
+                console.log("Bounding Box:", bbox);
+
+                // Fill triangle with random color
+                var randomColor = getRandomColor();
+                ctx.fillStyle = randomColor;
+                ctx.beginPath();
+                ctx.moveTo(p0.x, p0.y);
+                ctx.lineTo(p1.x, p1.y);
+                ctx.lineTo(p2.x, p2.y);
+                ctx.closePath();
+                ctx.fill();
+            }
+
+            function getRandomColor() {
+                var colors = ["red", "yellow", "blue", "green"];
+                return colors[Math.floor(Math.random() * colors.length)];
+            }
+        });
+    </script>
+</body>
+</html>
