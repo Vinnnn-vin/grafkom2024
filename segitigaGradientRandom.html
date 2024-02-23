@@ -29,11 +29,14 @@
                 var p1 = points[1];
                 var p2 = points[2];
 
-                // Calculate gradient points
-                var gradientPoints = calculateGradientPoints(p0, p1, p2);
+                // Calculate bounding box
+                var minX = Math.min(p0.x, p1.x, p2.x);
+                var maxX = Math.max(p0.x, p1.x, p2.x);
+                var minY = Math.min(p0.y, p1.y, p2.y);
+                var maxY = Math.max(p0.y, p1.y, p2.y);
 
-                // Create gradient based on random colors
-                var gradient = ctx.createLinearGradient(gradientPoints[0].x, gradientPoints[0].y, gradientPoints[2].x, gradientPoints[2].y);
+                // Create gradient based on interpolation
+                var gradient = ctx.createLinearGradient(minX, minY, maxX, maxY);
                 gradient.addColorStop(0, getRandomColor());
                 gradient.addColorStop(0.5, getRandomColor());
                 gradient.addColorStop(1, getRandomColor());
@@ -46,23 +49,6 @@
                 ctx.lineTo(p2.x, p2.y);
                 ctx.closePath();
                 ctx.fill();
-            }
-
-            // Function to calculate gradient points
-            function calculateGradientPoints(p0, p1, p2) {
-                var gradientPoints = [];
-                var numPoints = 20; // Number of points for gradient
-
-                for (var i = 0; i <= numPoints; i++) {
-                    for (var j = 0; j <= numPoints - i; j++) {
-                        var k = numPoints - i - j;
-                        var x = (i * p0.x + j * p1.x + k * p2.x) / numPoints;
-                        var y = (i * p0.y + j * p1.y + k * p2.y) / numPoints;
-                        gradientPoints.push({ x: x, y: y });
-                    }
-                }
-
-                return [gradientPoints[0], gradientPoints[numPoints / 2], gradientPoints[numPoints]];
             }
 
             // Function to generate random color
