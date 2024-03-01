@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>WebGL Smooth Color Triangle</title>
+    <title>WebGL Gradasi Warna Segitiga</title>
     <style>
         body, html {
             margin: 0;
@@ -37,9 +37,12 @@
             canvas.height = window.innerHeight * 0.8;
 
             var vertices = [
-                0.0,  0.5,   // Titik atas
-               -0.5, -0.5,   // Titik kiri bawah
-                0.5, -0.5    // Titik kanan bawah
+                // Titik atas, merah
+                0.0,  0.5, 1.0, 0.0, 0.0,
+                // Titik kiri bawah, hijau
+               -0.5, -0.5, 0.0, 1.0, 0.0,
+                // Titik kanan bawah, biru
+                0.5, -0.5, 0.0, 0.0, 1.0
             ];
 
             var vertex_buffer = gl.createBuffer();
@@ -49,8 +52,11 @@
 
             var vertCode = `#version 300 es
             in vec2 coordinates;
+            in vec3 vertexColor;
+            out vec3 fragmentColor;
             void main(void) {
                 gl_Position = vec4(coordinates, 0.0, 1.0);
+                fragmentColor = vertexColor;
             }`;
 
             var vertShader = gl.createShader(gl.VERTEX_SHADER);
@@ -59,11 +65,10 @@
 
             var fragCode = `#version 300 es
             precision mediump float;
+            in vec3 fragmentColor;
             out vec4 FragColor;
             void main(void) {
-                // Interpolasi warna di seluruh segitiga
-                vec3 color = vec3(1.0, 0.0, 0.0); // Warna merah
-                FragColor = vec4(color, 1.0);
+                FragColor = vec4(fragmentColor, 1.0);
             }`;
 
             var fragShader = gl.createShader(gl.FRAGMENT_SHADER);
@@ -78,8 +83,12 @@
 
             gl.bindBuffer(gl.ARRAY_BUFFER, vertex_buffer);
             var coord = gl.getAttribLocation(shaderProgram, "coordinates");
-            gl.vertexAttribPointer(coord, 2, gl.FLOAT, false, 0, 0);
+            gl.vertexAttribPointer(coord, 2, gl.FLOAT, false, 5 * Float32Array.BYTES_PER_ELEMENT, 0);
             gl.enableVertexAttribArray(coord);
+
+            var color = gl.getAttribLocation(shaderProgram, "vertexColor");
+            gl.vertexAttribPointer(color, 3, gl.FLOAT, false, 5 * Float32Array.BYTES_PER_ELEMENT, 2 * Float32Array.BYTES_PER_ELEMENT);
+            gl.enableVertexAttribArray(color);
 
             gl.clearColor(0.0, 0.0, 0.0, 0.0);
             gl.clear(gl.COLOR_BUFFER_BIT);
