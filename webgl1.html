@@ -2,69 +2,88 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>WebGL dan Gambar 1 Piksel Merah</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WebGL Red Pixel</title>
     <style>
-        body {
+        body, html {
             margin: 0;
+            padding: 0;
             overflow: hidden;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background-color: #f0f0f0;
+        }
+        canvas {
+            border: 2px solid black;
         }
     </style>
 </head>
 <body>
-    <canvas id="myCanvas"></canvas>
-
+    <canvas id="canvas"></canvas>
     <script>
-        // Inisialisasi WebGL
-        const canvas = document.getElementById("myCanvas");
-        const gl = canvas.getContext("webgl");
+        document.addEventListener("DOMContentLoaded", function() {
+            var canvas = document.getElementById('canvas');
+            var gl = canvas.getContext('webgl2');
 
-        if (!gl) {
-            console.error("WebGL tidak tersedia di browser ini.");
-        }
-
-        // Buat buffer untuk gambar 1 piksel merah
-        const pixelData = new Uint8Array([255, 0, 0, 255]); // RGBA (merah)
-        const pixelBuffer = gl.createBuffer();
-        gl.bindBuffer(gl.ARRAY_BUFFER, pixelBuffer);
-        gl.bufferData(gl.ARRAY_BUFFER, pixelData, gl.STATIC_DRAW);
-
-        // Buat vertex shader
-        const vsSource = `
-            attribute vec2 position;
-            void main() {
-                gl_Position = vec4(position, 0.0, 1.0);
+            if (!gl) {
+                console.error("WebGL 2 tidak tersedia pada browser ini.");
+                return;
             }
-        `;
-        const vertexShader = gl.createShader(gl.VERTEX_SHADER);
-        gl.shaderSource(vertexShader, vsSource);
-        gl.compileShader(vertexShader);
 
-        // Buat fragment shader
-        const fsSource = `
+            // Mengatur ukuran canvas sesuai dengan ukuran layar
+            canvas.width = window.innerWidth * 0.8;
+            canvas.height = window.innerHeight * 0.8;
+
+            var vertices = [
+                0.0,  0.0,  // Tengah layar
+            ];
+
+            var vertex_buffer = gl.createBuffer();
+            gl.bindBuffer(gl.ARRAY_BUFFER, vertex_buffer);
+            gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(vertices), gl.STATIC_DRAW);
+            gl.bindBuffer(gl.ARRAY_BUFFER, null);
+
+            var vertCode = `#version 300 es
+            in vec2 coordinates;
+            void main(void) {
+                gl_Position = vec4(coordinates, 0.0, 1.0);
+                gl_PointSize = 5.0;
+            }`;
+
+            var vertShader = gl.createShader(gl.VERTEX_SHADER);
+            gl.shaderSource(vertShader, vertCode);
+            gl.compileShader(vertShader);
+
+            var fragCode = `#version 300 es
             precision mediump float;
-            void main() {
-                gl_FragColor = vec4(1.0, 0.0, 0.0, 1.0); // Merah
-            }
-        `;
-        const fragmentShader = gl.createShader(gl.FRAGMENT_SHADER);
-        gl.shaderSource(fragmentShader, fsSource);
-        gl.compileShader(fragmentShader);
+            out vec4 FragColor;
+            void main(void) {
+                FragColor = vec4(1.0, 0.0, 0.0, 1.0);
+            }`;
 
-        // Buat program shader
-        const shaderProgram = gl.createProgram();
-        gl.attachShader(shaderProgram, vertexShader);
-        gl.attachShader(shaderProgram, fragmentShader);
-        gl.linkProgram(shaderProgram);
-        gl.useProgram(shaderProgram);
+            var fragShader = gl.createShader(gl.FRAGMENT_SHADER);
+            gl.shaderSource(fragShader, fragCode);
+            gl.compileShader(fragShader);
 
-        // Atur atribut posisi
-        const positionAttributeLocation = gl.getAttribLocation(shaderProgram, "position");
-        gl.enableVertexAttribArray(positionAttributeLocation);
-        gl.bindBuffer(gl.ARRAY_BUFFER, pixelBuffer);
-        gl.vertexAttribPointer(positionAttributeLocation, 2, gl.UNSIGNED_BYTE, false, 0, 0);
+            var shaderProgram = gl.createProgram();
+            gl.attachShader(shaderProgram, vertShader);
+            gl.attachShader(shaderProgram, fragShader);
+            gl.linkProgram(shaderProgram);
+            gl.useProgram(shaderProgram);
 
-        // Gambar 1 piksel merah di tengah layar
-        gl.drawArrays(gl.POINTS, 0, 1);
+            gl.bindBuffer(gl.ARRAY_BUFFER, vertex_buffer);
+            var coord = gl.getAttribLocation(shaderProgram, "coordinates");
+            gl.vertexAttribPointer(coord, 2, gl.FLOAT, false, 0, 0);
+            gl.enableVertexAttribArray(coord);
+
+            gl.clearColor(0.0, 0.0, 0.0, 0.0);
+            gl.enable(gl.DEPTH_TEST);
+            gl.clear(gl.COLOR_BUFFER_BIT);
+            gl.viewport(0,0,canvas.width,canvas.height);
+            gl.drawArrays(gl.POINTS, 0, 1);
+        });
     </script>
 </body>
 </html>
