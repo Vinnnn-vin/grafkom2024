@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WebGL Red Square</title>
+    <style>
+        body, html {
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background-color: #f0f0f0;
+        }
+        canvas {
+            border: 2px solid black;
+        }
+    </style>
+</head>
+<body>
+    <canvas id="canvas"></canvas>
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            var canvas = document.getElementById('canvas');
+            var gl = canvas.getContext('webgl2');
+
+            if (!gl) {
+                console.error("WebGL 2 tidak tersedia pada browser ini.");
+                return;
+            }
+
+            // Mengatur ukuran canvas sesuai dengan ukuran layar
+            canvas.width = window.innerWidth * 0.8;
+            canvas.height = window.innerHeight * 0.8;
+
+            var vertices = [
+                // Titik atas kiri
+                -0.5,  0.5,
+                // Titik bawah kiri
+                -0.5, -0.5,
+                // Titik atas kanan
+                 0.5,  0.5,
+                // Titik bawah kanan
+                 0.5, -0.5
+            ];
+
+            var vertex_buffer = gl.createBuffer();
+            gl.bindBuffer(gl.ARRAY_BUFFER, vertex_buffer);
+            gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(vertices), gl.STATIC_DRAW);
+
+            var vertCode = `#version 300 es
+            in vec2 coordinates;
+            void main(void) {
+                gl_Position = vec4(coordinates, 0.0, 1.0);
+            }`;
+
+            var vertShader = gl.createShader(gl.VERTEX_SHADER);
+            gl.shaderSource(vertShader, vertCode);
+            gl.compileShader(vertShader);
+
+            var fragCode = `#version 300 es
+            precision mediump float;
+            out vec4 FragColor;
+            void main(void) {
+                FragColor = vec4(1.0, 0.0, 0.0, 1.0);
+            }`;
+
+            var fragShader = gl.createShader(gl.FRAGMENT_SHADER);
+            gl.shaderSource(fragShader, fragCode);
+            gl.compileShader(fragShader);
+
+            var shaderProgram = gl.createProgram();
+            gl.attachShader(shaderProgram, vertShader);
+            gl.attachShader(shaderProgram, fragShader);
+            gl.linkProgram(shaderProgram);
+            gl.useProgram(shaderProgram);
+
+            gl.bindBuffer(gl.ARRAY_BUFFER, vertex_buffer);
+            var coord = gl.getAttribLocation(shaderProgram, "coordinates");
+            gl.vertexAttribPointer(coord, 2, gl.FLOAT, false, 0, 0);
+            gl.enableVertexAttribArray(coord);
+
+            gl.clearColor(0.0, 0.0, 0.0, 0.0);
+            gl.clear(gl.COLOR_BUFFER_BIT);
+            gl.viewport(0, 0, canvas.width, canvas.height);
+            gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4); // Menggambar persegi
+        });
+    </script>
+</body>
+</html>
