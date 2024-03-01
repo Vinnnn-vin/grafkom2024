@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>WebGL dan Gambar 1 Piksel Merah</title>
+    <style>
+        body {
+            margin: 0;
+            overflow: hidden;
+        }
+    </style>
+</head>
+<body>
+    <canvas id="myCanvas"></canvas>
+
+    <script>
+        // Inisialisasi WebGL
+        const canvas = document.getElementById("myCanvas");
+        const gl = canvas.getContext("webgl");
+
+        if (!gl) {
+            console.error("WebGL tidak tersedia di browser ini.");
+        }
+
+        // Buat buffer untuk gambar 1 piksel merah
+        const pixelData = new Uint8Array([255, 0, 0, 255]); // RGBA (merah)
+        const pixelBuffer = gl.createBuffer();
+        gl.bindBuffer(gl.ARRAY_BUFFER, pixelBuffer);
+        gl.bufferData(gl.ARRAY_BUFFER, pixelData, gl.STATIC_DRAW);
+
+        // Buat vertex shader
+        const vsSource = `
+            attribute vec2 position;
+            void main() {
+                gl_Position = vec4(position, 0.0, 1.0);
+            }
+        `;
+        const vertexShader = gl.createShader(gl.VERTEX_SHADER);
+        gl.shaderSource(vertexShader, vsSource);
+        gl.compileShader(vertexShader);
+
+        // Buat fragment shader
+        const fsSource = `
+            precision mediump float;
+            void main() {
+                gl_FragColor = vec4(1.0, 0.0, 0.0, 1.0); // Merah
+            }
+        `;
+        const fragmentShader = gl.createShader(gl.FRAGMENT_SHADER);
+        gl.shaderSource(fragmentShader, fsSource);
+        gl.compileShader(fragmentShader);
+
+        // Buat program shader
+        const shaderProgram = gl.createProgram();
+        gl.attachShader(shaderProgram, vertexShader);
+        gl.attachShader(shaderProgram, fragmentShader);
+        gl.linkProgram(shaderProgram);
+        gl.useProgram(shaderProgram);
+
+        // Atur atribut posisi
+        const positionAttributeLocation = gl.getAttribLocation(shaderProgram, "position");
+        gl.enableVertexAttribArray(positionAttributeLocation);
+        gl.bindBuffer(gl.ARRAY_BUFFER, pixelBuffer);
+        gl.vertexAttribPointer(positionAttributeLocation, 2, gl.UNSIGNED_BYTE, false, 0, 0);
+
+        // Gambar 1 piksel merah di tengah layar
+        gl.drawArrays(gl.POINTS, 0, 1);
+    </script>
+</body>
+</html>
