@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>WebGL Red Square</title>
+    <title>WebGL Gradated Square</title>
     <style>
         body, html {
             margin: 0;
@@ -47,9 +47,18 @@
                  0.5, -0.5
             ];
 
+            var indices = [
+                0, 1, 2,   // Segitiga 1 (atas kiri)
+                1, 2, 3    // Segitiga 2 (bawah kanan)
+            ];
+
             var vertex_buffer = gl.createBuffer();
             gl.bindBuffer(gl.ARRAY_BUFFER, vertex_buffer);
             gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(vertices), gl.STATIC_DRAW);
+
+            var index_buffer = gl.createBuffer();
+            gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, index_buffer);
+            gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(indices), gl.STATIC_DRAW);
 
             var vertCode = `#version 300 es
             in vec2 coordinates;
@@ -83,10 +92,12 @@
             gl.vertexAttribPointer(coord, 2, gl.FLOAT, false, 0, 0);
             gl.enableVertexAttribArray(coord);
 
+            gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, index_buffer);
+
             gl.clearColor(0.0, 0.0, 0.0, 0.0);
             gl.clear(gl.COLOR_BUFFER_BIT);
             gl.viewport(0, 0, canvas.width, canvas.height);
-            gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4); // Menggambar persegi
+            gl.drawElements(gl.TRIANGLES, indices.length, gl.UNSIGNED_SHORT, 0);
         });
     </script>
 </body>
