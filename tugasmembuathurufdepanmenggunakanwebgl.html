@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WebGL Letters</title>
+    <style>
+        body, html {
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background-color: #f0f0f0;
+        }
+        canvas {
+    border: 2px solid black;
+    margin: auto; /* Mengatur margin menjadi auto untuk posisi ke tengah */
+    display: block; /* Mengatur tampilan elemen menjadi block agar dapat menggunakan margin auto */
+    background-color: black; /* Menambahkan latar belakang hitam */
+}
+    </style>
+</head>
+<body>
+    <canvas id="canvasA"></canvas>
+    <canvas id="canvasC"></canvas>
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            function createWebGLContext(canvasId) {
+                var canvas = document.getElementById(canvasId);
+                var gl = canvas.getContext('webgl2');
+
+                if (!gl) {
+                    console.error("WebGL 2 tidak tersedia pada browser ini.");
+                    return null;
+                }
+
+                // Mengatur ukuran canvas sesuai dengan ukuran layar
+                canvas.width = window.innerWidth * 0.4;
+                canvas.height = window.innerHeight * 0.8;
+
+                return gl;
+            }
+
+            function createShaderProgram(gl, vertCode, fragCode) {
+                var vertShader = gl.createShader(gl.VERTEX_SHADER);
+                gl.shaderSource(vertShader, vertCode);
+                gl.compileShader(vertShader);
+
+                var fragShader = gl.createShader(gl.FRAGMENT_SHADER);
+                gl.shaderSource(fragShader, fragCode);
+                gl.compileShader(fragShader);
+
+                var shaderProgram = gl.createProgram();
+                gl.attachShader(shaderProgram, vertShader);
+                gl.attachShader(shaderProgram, fragShader);
+                gl.linkProgram(shaderProgram);
+                gl.useProgram(shaderProgram);
+
+                return shaderProgram;
+            }
+
+            function createBuffer(gl, vertices, colors) {
+                var vertex_buffer = gl.createBuffer();
+                gl.bindBuffer(gl.ARRAY_BUFFER, vertex_buffer);
+                gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(vertices), gl.STATIC_DRAW);
+
+                var color_buffer = gl.createBuffer();
+                gl.bindBuffer(gl.ARRAY_BUFFER, color_buffer);
+                gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(colors), gl.STATIC_DRAW);
+
+                return { vertex: vertex_buffer, color: color_buffer };
+            }
+
+            function draw(gl, shaderProgram, buffers, numVertices) {
+                var coord = gl.getAttribLocation(shaderProgram, "coordinates");
+                gl.bindBuffer(gl.ARRAY_BUFFER, buffers.vertex);
+                gl.vertexAttribPointer(coord, 2, gl.FLOAT, false, 0, 0);
+                gl.enableVertexAttribArray(coord);
+
+                var color = gl.getAttribLocation(shaderProgram, "colors");
+                gl.bindBuffer(gl.ARRAY_BUFFER, buffers.color);
+                gl.vertexAttribPointer(color, 4, gl.FLOAT, false, 0, 0);
+                gl.enableVertexAttribArray(color);
+
+                gl.clearColor(0.0, 0.0, 0.0, 0.0);
+                gl.clear(gl.COLOR_BUFFER_BIT);
+                gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
+                gl.drawArrays(gl.TRIANGLES, 0, numVertices);
+            }
+
+            var glA = createWebGLContext("canvasA");
+            var glC = createWebGLContext("canvasC");
+
+            if (glA && glC) {
+                // Huruf A
+                var vertCodeA = `#version 300 es
+                in vec2 coordinates;
+                in vec4 colors;
+                out vec4 vColor;
+                void main(void) {
+                    gl_Position = vec4(coordinates, 0.0, 1.0);
+                    vColor = colors;
+                }`;
+
+                var fragCodeA = `#version 300 es
+                precision mediump float;
+                in vec4 vColor;
+                out vec4 FragColor;
+                void main(void) {
+                    FragColor = vColor;
+                }`;
+
+                var verticesA = [
+                // Segitiga atas
+                -0.1, 0.3,
+                0.1, 0.3,
+                0, 0.650,
+
+                // Garis kiri
+                -0, 0.300,
+                -0.1, 0.3,
+                -0.3, -0.7,
+
+                // Garis kanan
+                -0, 0.300,
+                0.1, 0.3,
+                0.3, -0.7,
+
+                // Garis kiri (cyan)
+                -0.2, -0.4,
+                0, -0.3,
+                -0.3, -0.7,
+
+                // Garis kiri
+                0.2, -0.4,
+                0, -0.3,
+                0.3, -0.7,
+            ];
+
+                var colorsA = [
+                    // Warna segitiga atas
+                    1.0, 0.0, 0.0, 1.0,
+                    1.0, 0.0, 0.0, 1.0,
+                    1.0, 0.0, 0.0, 1.0,
+
+                    // Warna segitiga kiri atas
+                    0.0, 1.0, 0.0, 1.0,
+                    0.0, 1.0, 0.0, 1.0,
+                    0.0, 1.0, 0.0, 1.0,
+
+                    // Warna segitiga kanan atas
+                    0.0, 0.0, 1.0, 1.0,
+                    0.0, 0.0, 1.0, 1.0,
+                    0.0, 0.0, 1.0, 1.0,
+
+                    // Warna segitiga kiri bawah
+                    1.0, 1.0, 0.0, 1.0,
+                    1.0, 1.0, 0.0, 1.0,
+                    1.0, 1.0, 0.0, 1.0,
+
+                    // Warna segitiga kanan bawah
+                    0.0, 1.0, 1.0, 1.0,
+                    0.0, 1.0, 1.0, 1.0,
+                    0.0, 1.0, 1.0, 1.0,
+
+                    // Warna segitiga bawah
+                    1.0, 0.0, 1.0, 1.0,
+                    1.0, 0.0, 1.0, 1.0,
+                    1.0, 0.0, 1.0, 1.0
+                ];
+
+                var shaderProgramA = createShaderProgram(glA, vertCodeA, fragCodeA);
+                var buffersA = createBuffer(glA, verticesA, colorsA);
+
+                draw(glA, shaderProgramA, buffersA, 18);
+
+                // Huruf C
+                var vertCodeC = `#version 300 es
+                in vec2 coordinates;
+                in vec4 colors;
+                out vec4 vColor;
+                void main(void) {
+                    gl_Position = vec4(coordinates, 0.0, 1.0);
+                    vColor = colors;
+                }`;
+
+                var fragCodeC = `#version 300 es
+                precision mediump float;
+                in vec4 vColor;
+                out vec4 FragColor;
+                void main(void) {
+                    FragColor = vColor;
+                }`;
+
+                var verticesC = [
+    // Segitiga atas (merah)
+    0.02, 0.65,
+    -0.2, 0.65,
+    -0.5, 0.15,
+
+    // Segitiga kiri atas (hijau)
+     0.02, -0.65,
+    -0.2, -0.65,
+    -0.5, -0.2,
+
+    // Segitiga kanan atas (biru gelap)
+    -0.5, 0.15,
+    -0.5, -0.2,
+    -0.60, 0,
+
+    // Segitiga kiri bawah atas (kuning)
+    -0.1, 0.55,
+    -0.1, 0.65,
+    0.5, 0.65,
+
+    // Segitiga kiri bawah bawah (biru muda)
+    0.5, -0.65,
+    -0.1, -0.65,
+    -0.1, -0.55,
+
+];
+
+
+                var colorsC = [
+                    // Warna segitiga atas
+                    1.0, 0.0, 0.0, 1.0,
+                    1.0, 0.0, 0.0, 1.0,
+                    1.0, 0.0, 0.0, 1.0,
+
+                    // Warna segitiga kiri atas
+                    0.0, 1.0, 0.0, 1.0,
+                    0.0, 1.0, 0.0, 1.0,
+                    0.0, 1.0, 0.0, 1.0,
+
+                    // Warna segitiga kanan atas
+                    0.0, 0.0, 1.0, 1.0,
+                    0.0, 0.0, 1.0, 1.0,
+                    0.0, 0.0, 1.0, 1.0,
+
+                    // Warna segitiga kiri bawah atas
+                    1.0, 1.0, 0.0, 1.0,
+                    1.0, 1.0, 0.0, 1.0,
+                    1.0, 1.0, 0.0, 1.0,
+
+                    // Warna segitiga kanan bawah atas
+                    0.0, 1.0, 1.0, 1.0,
+                    0.0, 1.0, 1.0, 1.0,
+                    0.0, 1.0, 1.0, 1.0,
+
+                    // Warna segitiga kiri bawah bawah
+                    1.0, 0.0, 1.0, 1.0,
+                    1.0, 0.0, 1.0, 1.0,
+                    1.0, 0.0, 1.0, 1.0,
+
+                    // Warna segitiga kanan bawah bawah
+                    0.0, 1.0, 0.0, 1.0,
+                    0.0, 1.0, 0.0, 1.0,
+                    0.0, 1.0, 0.0, 1.0,
+
+                    // Warna segitiga bawah
+                    1.0, 1.0, 0.0, 1.0,
+                    1.0, 1.0, 0.0, 1.0,
+                    1.0, 1.0, 0.0, 1.0,
+
+                    // Warna garis vertical
+                    0.0, 0.0, 0.0, 1.0,
+                    0.0, 0.0, 0.0, 1.0,
+                    0.0, 0.0, 0.0, 1.0
+                ];
+
+                var shaderProgramC = createShaderProgram(glC, vertCodeC, fragCodeC);
+                var buffersC = createBuffer(glC, verticesC, colorsC);
+
+                draw(glC, shaderProgramC, buffersC, 27);
+            }
+        });
+    </script>
+</body>
+</html>
