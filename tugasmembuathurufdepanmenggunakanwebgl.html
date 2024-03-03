@@ -3,280 +3,219 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>WebGL Letters</title>
+    <title>WebGL Smooth Rotating Initial</title>
     <style>
         body, html {
             margin: 0;
             padding: 0;
             overflow: hidden;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            background-color: #f0f0f0;
         }
         canvas {
-    border: 2px solid black;
-    margin: auto; /* Mengatur margin menjadi auto untuk posisi ke tengah */
-    display: block; /* Mengatur tampilan elemen menjadi block agar dapat menggunakan margin auto */
-    background-color: black; /* Menambahkan latar belakang hitam */
-}
+            position: absolute;
+            top: 10%;
+            left: 10%;
+            border: 2px solid black;
+        }
     </style>
 </head>
 <body>
-    <canvas id="canvasA"></canvas>
-    <canvas id="canvasC"></canvas>
+    <canvas id="canvas" width="512px" height="512px"></canvas>
     <script>
-        document.addEventListener("DOMContentLoaded", function() {
-            function createWebGLContext(canvasId) {
-                var canvas = document.getElementById(canvasId);
-                var gl = canvas.getContext('webgl2');
+        var canvas = document.getElementById('canvas');
+        var gl = canvas.getContext('webgl2');
+        gl.depthFunc(gl.LEQUAL);
+    
+        var vertices = [
+            // Coordinates for the "A"
+            -0.2, 0.2,      // 0 Top left
+            -0.3, 0.2,        // 1 Top right
+            -0.10, 0.35,    // 2 Inner top left
+            -0.5, -0.10,    // 3 Inner top right
+            -0.1, -0.1,        // 4 Center right
+            -0.5, -0.1,        // 5 Center
+            -0.95, -0.25,   // 6 Inner bottom left
+            -0.15, -0.15,   // 7 Inner bottom right
+            -0.8, -0.2,     // 8 Bottom left
+            -0.1, -0.2,     // 9 Bottom right
+            -0.1, -0.2,      // 10 Center slight down mid right
 
-                if (!gl) {
-                    console.error("WebGL 2 tidak tersedia pada browser ini.");
-                    return null;
-                }
+            // Coordinates for the "C"
+            0.6, 0.4,       // 11 left stick top left
+            0.8, 0.4,      // 12 left stick top right
+            0.8, -0.4,      // 13 left stick bottom left
+            0.8, -0.4,     // 14 left stick bottom right
+            0.40, 0,        // 15 center
+            0.40, 0.2,      // 16 center slight up
+            0.40, -0.2,     // 17 center slight down
+            0.6, 0.4,       // 18 top stick left
+            0.8, 0.4,       // 19 top stick right
+            0.6, -0.4,      // 20 bottom stick left
+            0.8, -0.4,      // 21 bottom stick right
+            0.2, 0          // 22 center left
+        ];
+    
+        var colors = [
+            // Colors for the "A"
+            0.000, 0.000, 1.000,  // Color 1 - Blue
+            0.000, 1.000, 1.000,  // Color 2 - Cyan
+            0.000, 1.000, 0.000,  // Color 3 - Green
+            0.000, 0.000, 1.000,  // Color 4 - Blue
+            0.000, 1.000, 1.000,  // Color 5 - Cyan
+            0.000, 1.000, 0.000,  // Color 6 - Green
+            0.000, 0.000, 1.000,  // Color 7 - Blue
+            0.000, 1.000, 1.000,  // Color 8 - Cyan
+            0.000, 1.000, 0.000,  // Color 9 - Green
+            0.000, 0.000, 1.000,  // Color 10 - Blue
+            0.000, 1.000, 1.000,  // Color 11 - Cyan
 
-                // Mengatur ukuran canvas sesuai dengan ukuran layar
-                canvas.width = window.innerWidth * 0.4;
-                canvas.height = window.innerHeight * 0.8;
+            // Colors for the "C"
+            1.000, 0.000, 1.000,  // Color 12 - Magenta
+            1.000, 0.000, 0.000,  // Color 13 - Red
+            1.000, 0.000, 1.000,  // Color 14 - Magenta
+            1.000, 0.000, 0.000,  // Color 15 - Red
+            1.000, 0.000, 1.000,  // Color 16 - Magenta
+            1.000, 0.000, 0.000,  // Color 17 - Red
+            1.000, 0.000, 0.000,  // Color 18 - Red
+            1.000, 0.000, 1.000,  // Color 19 - Magenta
+            1.000, 0.000, 0.000,  // Color 20 - Red
+            1.000, 0.000, 0.000,  // Color 21 - Red
+            1.000, 1.000, 0.000,  // Color 22 - Yellow
+            1.000, 1.000, 0.000   // Color 23 - Yellow
+        ];
+    
+        var indices = [
+            // Indices for the "A"
+            0, 1, 2,
+            1, 2, 3,
+            0, 2, 8,
+            2, 6, 8,
+            6, 8, 9,
+            6, 7, 9,
+            10, 7, 9,
+            9, 10, 4,
+            5, 4, 10,
 
-                return gl;
+            // Indices for the "C"
+            11, 12, 16,
+            11, 16, 22,
+            22, 13, 14,
+            22, 14, 17,
+            15, 16, 22,
+            15, 17, 22,
+            15, 16, 18,
+            15, 17, 20,
+            15, 18, 19,
+            15, 20, 21,
+        ];
+    
+        var vertex_buffer = gl.createBuffer();
+        gl.bindBuffer(gl.ARRAY_BUFFER, vertex_buffer);
+        gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(vertices), gl.STATIC_DRAW);
+    
+        var color_buffer = gl.createBuffer();
+        gl.bindBuffer(gl.ARRAY_BUFFER, color_buffer);
+        gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(colors), gl.STATIC_DRAW);
+    
+        var index_buffer = gl.createBuffer();
+        gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, index_buffer);
+        gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(indices), gl.STATIC_DRAW);
+    
+        var vertCode = `#version 300 es
+        in vec2 coordinates;
+        in vec3 color;
+        out vec3 vColor;
+        uniform float angleA;
+        uniform float angleC;
+        uniform vec2 centerA;
+        uniform vec2 centerC;
+        void main(void) {
+            mat2 rotationA = mat2(cos(angleA), -sin(angleA), sin(angleA), cos(angleA));
+            mat2 rotationC = mat2(cos(angleC), sin(angleC), -sin(angleC), cos(angleC));
+            vec2 pos = coordinates;
+            if (coordinates.x < 0.0) {  // "A"
+                pos -= centerA;
+                pos = rotationA * pos;
+                pos += centerA;
+            } else {  // "C"
+                pos -= centerC;
+                pos = rotationC * pos;
+                pos += centerC;
             }
+            gl_Position = vec4(pos, 0.0, 1.0);
+            vColor = color;
+        }`;
+    
+        var vertShader = gl.createShader(gl.VERTEX_SHADER);
+        gl.shaderSource(vertShader, vertCode);
+        gl.compileShader(vertShader);
+    
+        var fragCode = `#version 300 es
+        precision mediump float;
+        in vec3 vColor;
+        out vec4 FragColor;
+        void main(void) {
+            FragColor = vec4(vColor, 1.0);
+        }`;
+    
+        var fragShader = gl.createShader(gl.FRAGMENT_SHADER);
+        gl.shaderSource(fragShader, fragCode);
+        gl.compileShader(fragShader);
+    
+        var shaderProgram = gl.createProgram();
+        gl.attachShader(shaderProgram, vertShader);
+        gl.attachShader(shaderProgram, fragShader);
+        gl.linkProgram(shaderProgram);
+        gl.useProgram(shaderProgram);
+    
+        gl.bindBuffer(gl.ARRAY_BUFFER, vertex_buffer);
+        var coord = gl.getAttribLocation(shaderProgram, "coordinates");
+        gl.vertexAttribPointer(coord, 2, gl.FLOAT, false, 0, 0);
+        gl.enableVertexAttribArray(coord);
+    
+        gl.bindBuffer(gl.ARRAY_BUFFER, color_buffer);
+        var color = gl.getAttribLocation(shaderProgram, "color");
+        gl.vertexAttribPointer(color, 3, gl.FLOAT, false, 0, 0);
+        gl.enableVertexAttribArray(color);
+    
+        gl.clearColor(0.0, 0.0, 0.0, 1.0);
+        gl.enable(gl.DEPTH_TEST);
 
-            function createShaderProgram(gl, vertCode, fragCode) {
-                var vertShader = gl.createShader(gl.VERTEX_SHADER);
-                gl.shaderSource(vertShader, vertCode);
-                gl.compileShader(vertShader);
+        gl.viewport(0,0,canvas.width,canvas.height);
 
-                var fragShader = gl.createShader(gl.FRAGMENT_SHADER);
-                gl.shaderSource(fragShader, fragCode);
-                gl.compileShader(fragShader);
+        // Get the locations of the new uniforms
+        var angleALoc = gl.getUniformLocation(shaderProgram, 'angleA');
+        var angleCLoc = gl.getUniformLocation(shaderProgram, 'angleC');
+        var centerALoc = gl.getUniformLocation(shaderProgram, 'centerA');
+        var centerCLoc = gl.getUniformLocation(shaderProgram, 'centerC');
 
-                var shaderProgram = gl.createProgram();
-                gl.attachShader(shaderProgram, vertShader);
-                gl.attachShader(shaderProgram, fragShader);
-                gl.linkProgram(shaderProgram);
-                gl.useProgram(shaderProgram);
+        // Initialize the angles
+        var angleA = 0.0;
+        var angleC = 0.0;
 
-                return shaderProgram;
-            }
+        // Set the centers of the "A" and "C"
+        gl.uniform2f(centerALoc, -0.5, 0.0);  // Adjust as needed
+        gl.uniform2f(centerCLoc, 0.5, 0.0);  // Adjust as needed
 
-            function createBuffer(gl, vertices, colors) {
-                var vertex_buffer = gl.createBuffer();
-                gl.bindBuffer(gl.ARRAY_BUFFER, vertex_buffer);
-                gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(vertices), gl.STATIC_DRAW);
+       // Function to update the angles and draw
+        function draw() {
+            // Update the angles
+            angleA += 0.01;  // Counter-clockwise for "A"
+            angleC += 0.02;  // Clockwise for "C"
 
-                var color_buffer = gl.createBuffer();
-                gl.bindBuffer(gl.ARRAY_BUFFER, color_buffer);
-                gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(colors), gl.STATIC_DRAW);
+            // Set the values of the 'angle' uniforms
+            gl.uniform1f(angleALoc, angleA);
+            gl.uniform1f(angleCLoc, angleC);
 
-                return { vertex: vertex_buffer, color: color_buffer };
-            }
+            // Clear and draw as before
+            gl.clear(gl.COLOR_BUFFER_BIT);
+            gl.drawElements(gl.TRIANGLES, indices.length, gl.UNSIGNED_SHORT, 0);
 
-            function draw(gl, shaderProgram, buffers, numVertices) {
-                var coord = gl.getAttribLocation(shaderProgram, "coordinates");
-                gl.bindBuffer(gl.ARRAY_BUFFER, buffers.vertex);
-                gl.vertexAttribPointer(coord, 2, gl.FLOAT, false, 0, 0);
-                gl.enableVertexAttribArray(coord);
+            // Request the next frame
+            requestAnimationFrame(draw);
+        }
 
-                var color = gl.getAttribLocation(shaderProgram, "colors");
-                gl.bindBuffer(gl.ARRAY_BUFFER, buffers.color);
-                gl.vertexAttribPointer(color, 4, gl.FLOAT, false, 0, 0);
-                gl.enableVertexAttribArray(color);
-
-                gl.clearColor(0.0, 0.0, 0.0, 0.0);
-                gl.clear(gl.COLOR_BUFFER_BIT);
-                gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
-                gl.drawArrays(gl.TRIANGLES, 0, numVertices);
-            }
-
-            var glA = createWebGLContext("canvasA");
-            var glC = createWebGLContext("canvasC");
-
-            if (glA && glC) {
-                // Huruf A
-                var vertCodeA = `#version 300 es
-                in vec2 coordinates;
-                in vec4 colors;
-                out vec4 vColor;
-                void main(void) {
-                    gl_Position = vec4(coordinates, 0.0, 1.0);
-                    vColor = colors;
-                }`;
-
-                var fragCodeA = `#version 300 es
-                precision mediump float;
-                in vec4 vColor;
-                out vec4 FragColor;
-                void main(void) {
-                    FragColor = vColor;
-                }`;
-
-                var verticesA = [
-                // Segitiga atas
-                -0.1, 0.3,
-                0.1, 0.3,
-                0, 0.650,
-
-                // Garis kiri
-                -0, 0.300,
-                -0.1, 0.3,
-                -0.3, -0.7,
-
-                // Garis kanan
-                -0, 0.300,
-                0.1, 0.3,
-                0.3, -0.7,
-
-                // Garis kiri (cyan)
-                -0.2, -0.4,
-                0, -0.3,
-                -0.3, -0.7,
-
-                // Garis kiri
-                0.2, -0.4,
-                0, -0.3,
-                0.3, -0.7,
-            ];
-
-                var colorsA = [
-                    // Warna segitiga atas
-                    1.0, 0.0, 0.0, 1.0,
-                    1.0, 0.0, 0.0, 1.0,
-                    1.0, 0.0, 0.0, 1.0,
-
-                    // Warna segitiga kiri atas
-                    0.0, 1.0, 0.0, 1.0,
-                    0.0, 1.0, 0.0, 1.0,
-                    0.0, 1.0, 0.0, 1.0,
-
-                    // Warna segitiga kanan atas
-                    0.0, 0.0, 1.0, 1.0,
-                    0.0, 0.0, 1.0, 1.0,
-                    0.0, 0.0, 1.0, 1.0,
-
-                    // Warna segitiga kiri bawah
-                    1.0, 1.0, 0.0, 1.0,
-                    1.0, 1.0, 0.0, 1.0,
-                    1.0, 1.0, 0.0, 1.0,
-
-                    // Warna segitiga kanan bawah
-                    0.0, 1.0, 1.0, 1.0,
-                    0.0, 1.0, 1.0, 1.0,
-                    0.0, 1.0, 1.0, 1.0,
-
-                    // Warna segitiga bawah
-                    1.0, 0.0, 1.0, 1.0,
-                    1.0, 0.0, 1.0, 1.0,
-                    1.0, 0.0, 1.0, 1.0
-                ];
-
-                var shaderProgramA = createShaderProgram(glA, vertCodeA, fragCodeA);
-                var buffersA = createBuffer(glA, verticesA, colorsA);
-
-                draw(glA, shaderProgramA, buffersA, 18);
-
-                // Huruf C
-                var vertCodeC = `#version 300 es
-                in vec2 coordinates;
-                in vec4 colors;
-                out vec4 vColor;
-                void main(void) {
-                    gl_Position = vec4(coordinates, 0.0, 1.0);
-                    vColor = colors;
-                }`;
-
-                var fragCodeC = `#version 300 es
-                precision mediump float;
-                in vec4 vColor;
-                out vec4 FragColor;
-                void main(void) {
-                    FragColor = vColor;
-                }`;
-
-                var verticesC = [
-    // Segitiga atas (merah)
-    0.02, 0.65,
-    -0.2, 0.65,
-    -0.5, 0.15,
-
-    // Segitiga kiri atas (hijau)
-     0.02, -0.65,
-    -0.2, -0.65,
-    -0.5, -0.2,
-
-    // Segitiga kanan atas (biru gelap)
-    -0.5, 0.15,
-    -0.5, -0.2,
-    -0.60, 0,
-
-    // Segitiga kiri bawah atas (kuning)
-    -0.1, 0.55,
-    -0.1, 0.65,
-    0.5, 0.65,
-
-    // Segitiga kiri bawah bawah (biru muda)
-    0.5, -0.65,
-    -0.1, -0.65,
-    -0.1, -0.55,
-
-];
-
-
-                var colorsC = [
-                    // Warna segitiga atas
-                    1.0, 0.0, 0.0, 1.0,
-                    1.0, 0.0, 0.0, 1.0,
-                    1.0, 0.0, 0.0, 1.0,
-
-                    // Warna segitiga kiri atas
-                    0.0, 1.0, 0.0, 1.0,
-                    0.0, 1.0, 0.0, 1.0,
-                    0.0, 1.0, 0.0, 1.0,
-
-                    // Warna segitiga kanan atas
-                    0.0, 0.0, 1.0, 1.0,
-                    0.0, 0.0, 1.0, 1.0,
-                    0.0, 0.0, 1.0, 1.0,
-
-                    // Warna segitiga kiri bawah atas
-                    1.0, 1.0, 0.0, 1.0,
-                    1.0, 1.0, 0.0, 1.0,
-                    1.0, 1.0, 0.0, 1.0,
-
-                    // Warna segitiga kanan bawah atas
-                    0.0, 1.0, 1.0, 1.0,
-                    0.0, 1.0, 1.0, 1.0,
-                    0.0, 1.0, 1.0, 1.0,
-
-                    // Warna segitiga kiri bawah bawah
-                    1.0, 0.0, 1.0, 1.0,
-                    1.0, 0.0, 1.0, 1.0,
-                    1.0, 0.0, 1.0, 1.0,
-
-                    // Warna segitiga kanan bawah bawah
-                    0.0, 1.0, 0.0, 1.0,
-                    0.0, 1.0, 0.0, 1.0,
-                    0.0, 1.0, 0.0, 1.0,
-
-                    // Warna segitiga bawah
-                    1.0, 1.0, 0.0, 1.0,
-                    1.0, 1.0, 0.0, 1.0,
-                    1.0, 1.0, 0.0, 1.0,
-
-                    // Warna garis vertical
-                    0.0, 0.0, 0.0, 1.0,
-                    0.0, 0.0, 0.0, 1.0,
-                    0.0, 0.0, 0.0, 1.0
-                ];
-
-                var shaderProgramC = createShaderProgram(glC, vertCodeC, fragCodeC);
-                var buffersC = createBuffer(glC, verticesC, colorsC);
-
-                draw(glC, shaderProgramC, buffersC, 27);
-            }
-        });
+        // Start the animation
+        draw();
     </script>
 </body>
 </html>
