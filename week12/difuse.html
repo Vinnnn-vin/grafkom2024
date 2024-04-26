@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WebGL 2.0 Simple Cube</title>
+    <style>
+        canvas {
+            border: 1px solid black;
+        }
+    </style>
+</head>
+<body>
+    <canvas id="glCanvas" width="640px" height="360px"></canvas>
+    <script src="https://cdn.jsdelivr.net/npm/gl-matrix@2.8.1/dist/gl-matrix-min.js"></script>
+    <script type="text/javascript">
+        const canvas = document.getElementById('glCanvas');
+        const gl = canvas.getContext('webgl2');
+
+        if (!gl) {
+            alert('WebGL 2.0 tidak didukung oleh browser ini.');
+        }
+
+        // Vertex shader program
+        const vsSource = `#version 300 es
+        in vec4 aVertexPosition;
+        in vec4 aVertexColor;
+        uniform mat4 uModelViewMatrix;
+        uniform mat4 uProjectionMatrix;
+        out vec4 vColor;
+        void main() {
+            gl_Position = uProjectionMatrix * uModelViewMatrix * aVertexPosition;
+            vColor = aVertexColor;
+        }
+        `;
+
+        // Fragment shader program
+        const fsSource = `#version 300 es
+        precision highp float;
+        in vec4 vColor;
+        out vec4 fragColor;
+        void main() {
+            fragColor = vColor;
+        }
+        `;
+
+        // Aktifkan depth testing
+        gl.enable(gl.DEPTH_TEST);
+        gl.depthFunc(gl.LEQUAL);
+
+        // Inisialisasi shader
+        const vertexShader = gl.createShader(gl.VERTEX_SHADER);
+        gl.shaderSource(vertexShader, vsSource);
+        gl.compileShader(vertexShader);
+
+        const fragmentShader = gl.createShader(gl.FRAGMENT_SHADER);
+        gl.shaderSource(fragmentShader, fsSource);
+        gl.compileShader(fragmentShader);
+
+        const shaderProgram = gl.createProgram();
+        gl.attachShader(shaderProgram, vertexShader);
+        gl.attachShader(shaderProgram, fragmentShader);
+        gl.linkProgram(shaderProgram);
+
+        // Kode untuk menggambar kubus dan kamera akan ditambahkan di sini
+        const vertices = new Float32Array([
+            // Depan
+            -1.0, -1.0, 1.0,
+            1.0, -1.0, 1.0,
+            1.0, 1.0, 1.0,
+            -1.0, 1.0, 1.0,
+            // Belakang
+            -1.0, -1.0, -1.0,
+            -1.0, 1.0, -1.0,
+            1.0, 1.0, -1.0,
+            1.0, -1.0, -1.0,
+            // Atas
+            -1.0, 1.0, -1.0,
+            -1.0, 1.0, 1.0,
+            1.0, 1.0, 1.0,
+            1.0, 1.0, -1.0,
+            // Bawah
+            -1.0, -1.0, -1.0,
+            1.0, -1.0, -1.0,
+            1.0, -1.0, 1.0,
+            -1.0, -1.0, 1.0,
+            // Kanan
+            1.0, -1.0, -1.0,
+            1.0, 1.0, -1.0,
+            1.0, 1.0, 1.0,
+            1.0, -1.0, 1.0,
+            // Kiri
+            -1.0, -1.0, -1.0,
+            -1.0, -1.0, 1.0,
+            -1.0, 1.0, 1.0,
+            -1.0, 1.0, -1.0,
+        ]);
+
+        // Indeks untuk verteks kubus
+        const indices = new Uint16Array([
+            0, 1, 2, 0, 2, 3,    // Depan
+            4, 5, 6, 4, 6, 7,    // Belakang
+            8, 9, 10, 8, 10, 11,  // Atas
+            12, 13, 14, 12, 14, 15, // Bawah
+            16, 17, 18, 16, 18, 19, // Kanan
+            20, 21, 22, 20, 22, 23  // Kiri
+        ]);
+
+        const colors = new Float32Array([
+            // Depan - Merah
+            1.0, 0.0, 0.0, 1.0,
+            1.0, 0.0, 0.0, 1.0,
+            1.0, 0.0, 0.0, 1.0,
+            1.0, 0.0, 0.0, 1.0,
+            // Belakang - Hijau
+            0.0, 1.0, 0.0, 1.0,
+            0.0, 1.0, 0.0, 1.0,
+            0.0, 1.0, 0.0, 1.0,
+            0.0, 1.0, 0.0, 1.0,
+            // Atas - Biru
+            0.0, 0.0, 1.0, 1.0,
+            0.0, 0.0, 1.0, 1.0,
+            0.0, 0.0, 1.0, 1.0,
+            0.0, 0.0, 1.0, 1.0,
+            // Bawah - Kuning
+            1.0, 1.0, 0.0, 1.0,
+            1.0, 1.0, 0.0, 1.0,
+            1.0, 1.0, 0.0, 1.0,
+            1.0, 1.0, 0.0, 1.0,
+            // Kanan - Ungu
+            1.0, 0.0, 1.0, 1.0,
+            1.0, 0.0, 1.0, 1.0,
+            1.0, 0.0, 1.0, 1.0,
+            1.0, 0.0, 1.0, 1.0,
+            // Kiri - Cyan
+            0.0, 1.0, 1.0, 1.0,
+            0.0, 1.0, 1.0, 1.0,
+            0.0, 1.0, 1.0, 1.0,
+            0.0, 1.0, 1.0, 1.0,
+        ]);
+
+        // Membuat buffer untuk verteks kubus
+        const vertexBuffer = gl.createBuffer();
+        gl.bindBuffer(gl.ARRAY_BUFFER, vertexBuffer);
+        gl.bufferData(gl.ARRAY_BUFFER, vertices, gl.STATIC_DRAW);
+
+        // Membuat buffer untuk indeks kubus
+        const indexBuffer = gl.createBuffer();
+        gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, indexBuffer);
+        gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, indices, gl.STATIC_DRAW);
+
+        // Membuat buffer untuk warna
+        const colorBuffer = gl.createBuffer();
+        gl.bindBuffer(gl.ARRAY_BUFFER, colorBuffer);
+        gl.bufferData(gl.ARRAY_BUFFER, colors, gl.STATIC_DRAW);
+
+        // Mendefinisikan posisi verteks untuk shader
+        const positionAttribLocation = gl.getAttribLocation(shaderProgram, 'aVertexPosition');
+        gl.bindBuffer(gl.ARRAY_BUFFER, vertexBuffer);
+        gl.vertexAttribPointer(positionAttribLocation, 3, gl.FLOAT, false, 0, 0);
+        gl.enableVertexAttribArray(positionAttribLocation);
+
+        // Mendefinisikan warna verteks untuk shader
+        const colorAttribLocation = gl.getAttribLocation(shaderProgram, 'aVertexColor');
+        gl.bindBuffer(gl.ARRAY_BUFFER, colorBuffer);
+        gl.vertexAttribPointer(colorAttribLocation, 4, gl.FLOAT, false, 0, 0);
+        gl.enableVertexAttribArray(colorAttribLocation);
+
+        // Matriks proyeksi ortogonal yang disesuaikan
+        const aspectRatio = 16 / 9; // Aspect ratio 16:9
+        const scale = 4.0; // Skala untuk 'zoom' kamera
+        const left = -scale * aspectRatio;
+        const right = scale * aspectRatio;
+        const bottom = -scale;
+        const topSide = scale;
+        const near = 0.1;
+        const far = 100;
+        const projectionMatrix = mat4.create();
+        mat4.ortho(projectionMatrix, left, right, bottom, topSide, near, far);
+
+        // Matriks view menggunakan lookAt
+        const eye = [4, 4, 4]; // Posisi kamera
+        const center = [0, 0, 0]; // Titik yang dilihat kamera
+        const up = [0, 1, 0]; // Vektor 'up' kamera
+        const viewMatrix = mat4.create();
+        mat4.lookAt(viewMatrix, eye, center, up);
+
+        // Mengatur uniform untuk shader
+        const uModelViewMatrix = gl.getUniformLocation(shaderProgram, 'uModelViewMatrix');
+        const uProjectionMatrix = gl.getUniformLocation(shaderProgram, 'uProjectionMatrix');
+
+        gl.useProgram(shaderProgram);
+        gl.uniformMatrix4fv(uModelViewMatrix, false, viewMatrix);
+        gl.uniformMatrix4fv(uProjectionMatrix, false, projectionMatrix);
+
+        // Menggambar kubus
+        gl.clearColor(1, 1, 1, 1); // Warna latar putih
+        gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+        gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, indexBuffer);
+        gl.drawElements(gl.TRIANGLES, indices.length, gl.UNSIGNED_SHORT, 0);
+    </script>
+</body>
+</html>
