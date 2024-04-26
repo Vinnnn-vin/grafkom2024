@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>WebGL 2.0 Simple</title>
+    <style>
+        body { margin: 0; }
+        canvas { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+    <canvas id="webgl-canvas"></canvas>
+    <script>
+        // Mendapatkan elemen canvas dan mengaktifkan konteks WebGL 2
+        let canvas = document.getElementById('webgl-canvas');
+        let gl = canvas.getContext('webgl2');
+
+        // Cek apakah WebGL 2 tersedia
+        if (!gl) {
+            alert('WebGL 2 tidak tersedia pada browser Anda');
+        }
+
+        // Mendefinisikan shader dengan GLSL ES 300
+        let vertexShaderSource = `#version 300 es
+        in vec4 a_position;
+        uniform mat4 u_matrix;
+        void main() {
+            gl_Position = u_matrix * a_position;
+        }`;
+
+        let fragmentShaderSource = `#version 300 es
+        precision mediump float;
+        out vec4 outColor;
+        void main() {
+            outColor = vec4(1, 0, 0, 1);  // Kubus berwarna merah
+        }`;
+
+        // Membuat program shader
+        let vertexShader = createShader(gl, gl.VERTEX_SHADER, vertexShaderSource);
+        let fragmentShader = createShader(gl, gl.FRAGMENT_SHADER, fragmentShaderSource);
+        let program = createProgram(gl, vertexShader, fragmentShader);
+
+        // Mendefinisikan geometri kubus
+        let cubeGeometry = [
+            // Koordinat posisi
+            -2, -2,  2,
+             2, -2,  2,
+            -2,  2,  2,
+            -2,  2,  2,
+             2, -2,  2,
+             2,  2,  2,
+        ];
+
+        // Membuat buffer geometri
+        let positionBuffer = gl.createBuffer();
+        gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer);
+        gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(cubeGeometry), gl.STATIC_DRAW);
+
+        // Mengatur viewport dan warna latar belakang
+        gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
+        gl.clearColor(0, 0, 0, 1);
+        gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+
+        // Mengaktifkan depth testing
+        gl.enable(gl.DEPTH_TEST);
+
+        // Menggambar kubus
+        gl.useProgram(program);
+        let positionAttributeLocation = gl.getAttribLocation(program, "a_position");
+        gl.enableVertexAttribArray(positionAttributeLocation);
+        gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer);
+        gl.vertexAttribPointer(positionAttributeLocation, 3, gl.FLOAT, false, 0, 0);
+        let matrixUniformLocation = gl.getUniformLocation(program, "u_matrix");
+        let matrix = ortho(-5, 5, -5, 5, -5, 5);
+        gl.uniformMatrix4fv(matrixUniformLocation, false, matrix);
+        gl.drawArrays(gl.TRIANGLES, 0, 6);
+    </script>
+</body>
+</html>
